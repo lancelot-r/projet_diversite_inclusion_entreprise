@@ -6,13 +6,13 @@ import pandas as pd
 df1 = pd.read_csv("effectifs.csv")
 df2 = pd.read_csv("formation_evo.csv")
 df3 = pd.read_csv("alternance.csv")
-#df4 = pd.read_csv("")
+df4 = pd.read_csv("absence_congé_matpat")
 df5 = pd.read_csv("temps_partiel.csv")
 
 # Extraire les évolutions uniques pour la liste déroulante
 evolutions = df2["Evolution"].unique()
 colleges = df1["Collège"].unique()
-#colleges_df4 = df4["Collège"].unique()
+colleges_df4 = df4["Collège"].unique()
 colleges_df5 = df5["Collège"].unique()
 
 app = Dash(suppress_callback_exceptions=True)
@@ -233,46 +233,44 @@ def display_alternance_graphs(_):
         html.Div(dcc.Graph(figure=fig_professionnalisation), style={'width': '48%'})
     ]
 
-# @app.callback(
-#         Output('graphs-container_4', 'children'),
-#         Input('conges-dropdown', 'value')
-# )
+@app.callback(
+        Output('graphs-container_4', 'children'),
+        Input('conges-dropdown', 'value')
+)
 
 # Graphique Tab 1 : Disparité des effectifs femmes-hommes
-# def update_conges_graphs(selected_csp):
+def update_conges_graphs(selected_csp):
 
-#     filtered_df4 = df4[df4["Collège"] == selected_csp]
+    filtered_df4 = df4[df4["Collège"] == selected_csp]
 
-#     #selected_csp = filtered_df1["Collège"].unique()
+    selected_csp = filtered_df1["Collège"].unique()
 
-#     fig_conges_femme = px.bar(
-#         filtered_df4,
-#         x="Année",
-#         y="",
-#         text_auto='.2s',
-#         labels={'Nombre de salariés':'Nombre d\'employés', 'Année':'Année'},
-#         color_discrete_map={
-#             'Homme': '#1b909a',  # Bleu
-#             'Femme': '#7900f1',  # Rose
-#         }
-#     )
+    fig_conges_femme = px.bar(
+        filtered_df4,
+        x="Année",
+        y="Nombre d'heures moyen de congé maternité par salariée",
+        text_auto='.2s',
+        labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'employés', 'Année':'Année'},
+        color_discrete_map={
+            'Femme': '#7900f1', 
+        }
+    )
 
-#     fig_conges_homme = px.bar(
-#         filtered_df4,
-#         x="Année",
-#         y="Nombre de salariés",
-#         text_auto='.2s',
-#         labels={'Nombre de salariés':'Nombre d\'employés', 'Année':'Année'},
-#         color_discrete_map={
-#             'Homme': '#1b909a',  # Bleu
-#             'Femme': '#7900f1',  # Rose
-#         }
-#     )
+    fig_conges_homme = px.bar(
+        filtered_df4,
+        x="Année",
+        y="Nombre d'heures moyen de congé paternité par salarié",
+        text_auto='.2s',
+        labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'employés', 'Année':'Année'},
+        color_discrete_map={
+            'Homme': '#1b909a', 
+        }
+    )
 
-#     return [
-#         html.Div(dcc.Graph(figure=mosaicplot_2017), style={'width': '48%'}),
-#         html.Div(dcc.Graph(figure=mosaicplot_2023), style={'width': '48%'})
-#     ]
+    return [
+        html.Div(dcc.Graph(figure=fig_conges_femme), style={'width': '48%'}),
+        html.Div(dcc.Graph(figure=fig_conges_homme), style={'width': '48%'})
+    ]
 
 @app.callback(
     Output('graphs-container_5', 'children'),
