@@ -1,25 +1,67 @@
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
 import pandas as pd
 
 # Charger les données
 df1 = pd.read_csv("effectifs.csv")
-df2 = pd.read_csv("formation_evolution.csv")
-df4 = pd.read_csv("alternance.csv")
+df2 = pd.read_csv("formation_evo.csv")
+df3 = pd.read_csv("alternance.csv")
+df5 = pd.read_csv("temps_partiel.csv")
 
 # Extraire les évolutions uniques pour la liste déroulante
 evolutions = df2["Evolution"].unique()
 colleges = df1["Collège"].unique()
+colleges_df5 = df5["Collège"].unique()
 
-# Créer l'application Dash
-app = Dash(__name__)
+app = Dash(suppress_callback_exceptions=True)
 
-# Layout de l'application
 app.layout = html.Div([
-    html.H1("Tableaux de bord sur l'évolution des formations et des alternances", style={'text-align': 'center'}),
+    dcc.Tabs(
+        id="tabs-with-classes",
+        value='tab-2',
+        parent_className='custom-tabs',
+        className='custom-tabs-container',
+        children=[
+            dcc.Tab(
+                label='Disparité des effectifs femmes-hommes',
+                value='tab-1',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Formations et évolutions au sein de l\'entreprise',
+                value='tab-2',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Contrats d\'apprentissage et d\'alternance',
+                value='tab-3',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Evolution des prises de congés maternité / paternité',
+                value='tab-4',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Proportion en temps partiel par genre',
+                value='tab-5',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            )
+        ]),
+    html.Div(id='tabs-content-classes')
+])
 
-    # Section 0 : Nombre de salariés homme-femme
-   html.Div([
+@callback(Output('tabs-content-classes', 'children'),
+              Input('tabs-with-classes', 'value'))
+
+def render_content(tab):
+    if tab == 'tab-1':
+        return html.Div([
         html.H2("Disparité des effectifs hommes-femmes", style={'text-align': 'center'}),
         dcc.Dropdown(
             id='effectifs-dropdown',
@@ -28,10 +70,10 @@ app.layout = html.Div([
             placeholder="Sélectionnez une catégorie socio-professionnelle"
         ),
         html.Div(id='graphs-container_1', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
-    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'}),
+    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
 
-    # Section 1 : Evolution des formations
-    html.Div([
+    elif tab == 'tab-2':
+        return html.Div([
         html.H2("Évolution des formations", style={'text-align': 'center'}),
         dcc.Dropdown(
             id='evolution-dropdown',
@@ -40,20 +82,37 @@ app.layout = html.Div([
             placeholder="Sélectionnez une évolution"
         ),
         html.Div(id='graphs-container_2', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
-    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'}),
-
-    # Section 2 : Evolution des alternances
-    html.Div([
+    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
+    
+    elif tab == 'tab-3':
+        return html.Div([
         html.H2("Évolution des contrats d'alternance", style={'text-align': 'center'}),
-        html.Div(id='alternance-graphs', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
+        html.Div(id='graphs-container_3', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
     ], style={'padding': '20px'})
-])
+
+    elif tab == 'tab-4':
+        return html.Div([
+            html.H3('Tab content 4')
+        ])
+    
+    elif tab == 'tab-5':
+        return html.Div([
+        html.H2("Proportion en temps-partiel par genre", style={'text-align': 'center'}),
+        dcc.Dropdown(
+            id='temps_partiel-dropdown',
+            options=[{'label': csp, 'value': csp} for csp in colleges_df5],
+            value=colleges_df5[0],  # Valeur par défaut
+            placeholder="Sélectionnez une catégorie socio-professionnelle"
+        ),
+        html.Div(id='graphs-container_5', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
+    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
 
 @app.callback(
         Output('graphs-container_1', 'children'),
         Input('effectifs-dropdown', 'value')
 )
 
+# Graphique Tab 1 : Disparité des effectifs femmes-hommes
 def update_graphs(selected_csp):
 
     filtered_df1 = df1[df1["Collège"] == selected_csp]
@@ -78,8 +137,6 @@ def update_graphs(selected_csp):
         html.Div(dcc.Graph(figure=fig_effectifs), style={'width': '80%'})
     ]
 
-
-# Callback pour mettre à jour les graphiques de la première section
 @app.callback(
     Output('graphs-container_2', 'children'),
     Input('evolution-dropdown', 'value')
@@ -96,7 +153,7 @@ def update_graphs(selected_evolution):
     fig_population_formee = px.line(
         filtered_df2,
         x='Année',
-        y='Population formée',
+        y="Proportion d'employés formés (%)",
         color='Genre',
         title=f"Population formée - {selected_college}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
@@ -110,7 +167,7 @@ def update_graphs(selected_evolution):
     fig_nombre_evolutions = px.line(
         filtered_df2,
         x='Année',
-        y='Evolutions',
+        y="Proportion d'évolutions (%)",
         color='Genre',
         title=f"Evolutions - {selected_evolution}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
@@ -127,17 +184,17 @@ def update_graphs(selected_evolution):
         html.Div(dcc.Graph(figure=fig_nombre_evolutions), style={'width': '48%'})
     ]
 
-# Callback pour afficher les graphiques de la deuxième section
 @app.callback(
-    Output('alternance-graphs', 'children'),
-    Input('evolution-dropdown', 'value')  # Pas réellement dépendant de l'input, mais requis pour callback
+    Output('graphs-container_3', 'children'),
+    Input('tabs-with-classes', 'value')
 )
+
 def display_alternance_graphs(_):
-    df4_apprentissage = df4[df4["Indicateur"] == "Contrats d'apprentissage conclus dans l'année"]
-    df4_pro = df4[df4["Indicateur"] == "Contrats de professionnalisation conclus dans l'année"]
+    df3_apprentissage = df3[df3["Indicateur"] == "Contrats d'apprentissage conclus dans l'année"]
+    df3_pro = df3[df3["Indicateur"] == "Contrats de professionnalisation conclus dans l'année"]
 
     fig_apprentissage = px.line(
-        df4_apprentissage,
+        df3_apprentissage,
         x='Année',
         y="Nombre de contrats",
         color="Genre",
@@ -150,7 +207,7 @@ def display_alternance_graphs(_):
     )
 
     fig_professionnalisation = px.line(
-        df4_pro,
+        df3_pro,
         x='Année',
         y="Nombre de contrats",
         color="Genre",
@@ -167,6 +224,50 @@ def display_alternance_graphs(_):
         html.Div(dcc.Graph(figure=fig_professionnalisation), style={'width': '48%'})
     ]
 
-# Exécuter l'application
+@app.callback(
+    Output('graphs-container_5', 'children'),
+    Input('temps_partiel-dropdown', 'value')
+)
+
+def update_temps_partiel_graphs(selected_csp):
+
+    filtered_df5 = df5[df5["Collège"] == selected_csp]
+
+    # Extraire les collèges uniques pour le titre
+    selected_college = filtered_df5["Collège"].unique()
+
+    # Créer les graphiques
+    mosaicplot_2017 = px.treemap(
+        filtered_df5[filtered_df5["Année"] == 2017],
+        path=["Collège", "Genre"],
+        values="Taux_Temps_Partiel",
+        color="Genre",
+        title=f"Taux de Temps Partiel par Genre et CSP en 2017",
+        labels={'Valeur': 'Valeur', 'Année': 'Année'},
+        color_discrete_map={
+            'Homme': '#1b909a',  # Bleu
+            'Femme': '#7900f1',  # Rose
+        }
+    )
+
+    mosaicplot_2023 = px.treemap(
+        filtered_df5[filtered_df5["Année"] == 2023],
+        path=["CSP", "Genre"],
+        values="Taux_Temps_Partiel",
+        color="Genre",
+        title=f"Taux de Temps Partiel par Genre et CSP en 2017",
+        labels={'Valeur': 'Valeur', 'Année': 'Année'},
+        color_discrete_map={
+            'Homme': '#1b909a',  # Bleu
+            'Femme': '#7900f1',  # Rose
+        }
+    )
+
+    # Retourner les graphiques dans des divs côte à côte
+    return [
+        html.Div(dcc.Graph(figure=mosaicplot_2017), style={'width': '48%'}),
+        html.Div(dcc.Graph(figure=mosaicplot_2023), style={'width': '48%'})
+    ]
+
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
