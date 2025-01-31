@@ -6,7 +6,7 @@ import pandas as pd
 df1 = pd.read_csv("effectifs.csv")
 df2 = pd.read_csv("formation_evo.csv")
 df3 = pd.read_csv("alternance.csv")
-df4 = pd.read_csv("absence_congé_matpat")
+df4 = pd.read_csv("absence_conge_matpat.csv")
 df5 = pd.read_csv("temps_partiel.csv")
 
 # Extraire les évolutions uniques pour la liste déroulante
@@ -243,14 +243,14 @@ def update_conges_graphs(selected_csp):
 
     filtered_df4 = df4[df4["Collège"] == selected_csp]
 
-    selected_csp = filtered_df1["Collège"].unique()
+    #selected_csp = filtered_df1["Collège"].unique()
 
     fig_conges_femme = px.bar(
         filtered_df4,
         x="Année",
         y="Nombre d'heures moyen de congé maternité par salariée",
         text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'employés', 'Année':'Année'},
+        labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'heures moyen de congé maternité', 'Année':'Année'},
         color_discrete_map={
             'Femme': '#7900f1', 
         }
@@ -261,7 +261,7 @@ def update_conges_graphs(selected_csp):
         x="Année",
         y="Nombre d'heures moyen de congé paternité par salarié",
         text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'employés', 'Année':'Année'},
+        labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'heures moyen de congé paternité', 'Année':'Année'},
         color_discrete_map={
             'Homme': '#1b909a', 
         }
