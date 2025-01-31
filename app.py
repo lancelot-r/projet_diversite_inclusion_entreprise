@@ -6,11 +6,13 @@ import pandas as pd
 df1 = pd.read_csv("effectifs.csv")
 df2 = pd.read_csv("formation_evo.csv")
 df3 = pd.read_csv("alternance.csv")
+df4 = pd.read_csv("absence_congé_matpat")
 df5 = pd.read_csv("temps_partiel.csv")
 
 # Extraire les évolutions uniques pour la liste déroulante
 evolutions = df2["Evolution"].unique()
 colleges = df1["Collège"].unique()
+colleges_df4 = df4["Collège"].unique()
 colleges_df5 = df5["Collège"].unique()
 
 app = Dash(suppress_callback_exceptions=True)
@@ -92,8 +94,15 @@ def render_content(tab):
 
     elif tab == 'tab-4':
         return html.Div([
-            html.H3('Tab content 4')
-        ])
+        html.H2("Evolution des prises de congés maternité / paternité", style={'text-align': 'center'}),
+        dcc.Dropdown(
+            id='conges-dropdown',
+            options=[{'label': csp, 'value': csp} for csp in colleges_df4],
+            value=colleges_df4[0],  # Valeur par défaut
+            placeholder="Sélectionnez une catégorie socio-professionnelle"
+        ),
+        html.Div(id='graphs-container_4', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
+    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
     
     elif tab == 'tab-5':
         return html.Div([
@@ -117,7 +126,7 @@ def update_graphs(selected_csp):
 
     filtered_df1 = df1[df1["Collège"] == selected_csp]
 
-    selected_csp = filtered_df1["Collège"].unique()
+    #selected_csp = filtered_df1["Collège"].unique()
 
     fig_effectifs = px.bar(
         filtered_df1,
@@ -225,6 +234,45 @@ def display_alternance_graphs(_):
     ]
 
 @app.callback(
+        Output('graphs-container_4', 'children'),
+        Input('conges-dropdown', 'value')
+)
+
+# Graphique Tab 1 : Disparité des effectifs femmes-hommes
+def update_conges_graphs(selected_csp):
+
+    filtered_df4 = df4[df4["Collège"] == selected_csp]
+
+    selected_csp = filtered_df1["Collège"].unique()
+
+    fig_conges_femme = px.bar(
+        filtered_df4,
+        x="Année",
+        y="Nombre d'heures moyen de congé maternité par salariée",
+        text_auto='.2s',
+        labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'employés', 'Année':'Année'},
+        color_discrete_map={
+            'Femme': '#7900f1', 
+        }
+    )
+
+    fig_conges_homme = px.bar(
+        filtered_df4,
+        x="Année",
+        y="Nombre d'heures moyen de congé paternité par salarié",
+        text_auto='.2s',
+        labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'employés', 'Année':'Année'},
+        color_discrete_map={
+            'Homme': '#1b909a', 
+        }
+    )
+
+    return [
+        html.Div(dcc.Graph(figure=fig_conges_femme), style={'width': '48%'}),
+        html.Div(dcc.Graph(figure=fig_conges_homme), style={'width': '48%'})
+    ]
+
+@app.callback(
     Output('graphs-container_5', 'children'),
     Input('temps_partiel-dropdown', 'value')
 )
@@ -234,13 +282,13 @@ def update_temps_partiel_graphs(selected_csp):
     filtered_df5 = df5[df5["Collège"] == selected_csp]
 
     # Extraire les collèges uniques pour le titre
-    selected_college = filtered_df5["Collège"].unique()
+    # selected_college = filtered_df5["Collège"].unique()
 
     # Créer les graphiques
     mosaicplot_2017 = px.treemap(
         filtered_df5[filtered_df5["Année"] == 2017],
         path=["Collège", "Genre"],
-        values="Taux_Temps_Partiel",
+        values="Proportion de salariés en temps partiel en décembre (%)",
         color="Genre",
         title=f"Taux de Temps Partiel par Genre et CSP en 2017",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
@@ -252,10 +300,10 @@ def update_temps_partiel_graphs(selected_csp):
 
     mosaicplot_2023 = px.treemap(
         filtered_df5[filtered_df5["Année"] == 2023],
-        path=["CSP", "Genre"],
-        values="Taux_Temps_Partiel",
+        path=["Collège", "Genre"],
+        values="Proportion de salariés en temps partiel en décembre (%)",
         color="Genre",
-        title=f"Taux de Temps Partiel par Genre et CSP en 2017",
+        title=f"Taux de Temps Partiel par Genre et CSP en 2023",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         color_discrete_map={
             'Homme': '#1b909a',  # Bleu
