@@ -1,26 +1,41 @@
 from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
 import pandas as pd
+import numpy as np
+import geopandas as gpd
+import folium
+from matplotlib import colormaps
+import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
 
 # Charger les données
-df1 = pd.read_csv("effectifs.csv")
+df1 = pd.read_csv("salaire_effectifs.csv")
 df2 = pd.read_csv("formation_evo.csv")
 df3 = pd.read_csv("alternance.csv")
 df4 = pd.read_csv("absence_conge_matpat.csv")
-df5 = pd.read_csv("temps_partiel.csv")
+df5 = pd.read_csv("temps_partiel_final.csv")
+df6 = pd.read_csv("maps.csv")
+gdf1 = gpd.read_file("data/region.geojson")
+gdf1.rename(columns={'nom': 'Région'}, inplace=True)
+gdf1 = gdf1.merge(df6, on='Région', how='left')
 
 # Extraire les évolutions uniques pour la liste déroulante
 evolutions = df2["Evolution"].unique()
 colleges = df1["Collège"].unique()
 colleges_df4 = df4["Collège"].unique()
 colleges_df5 = df5["Collège"].unique()
+indicateur_df6 = ["Note Ecart rémunération", "Note Ecart taux de promotion", "Note Ecart taux d'augmentation (hors promotion)", 
+                      "Note Ecart taux d'augmentation", "Note Ecart taux de promotion", "Note Hautes rémunérations",
+                      "Note Retour congé maternité", "Note Index"]
 
 app = Dash(suppress_callback_exceptions=True)
 
 app.layout = html.Div([
+    html.H1("Diversité et inclusion en entreprise évolution du bilan social chez EDF", style={'text-align': 'center', 'margin-top': '20px'}),
+
     dcc.Tabs(
         id="tabs-with-classes",
-        value='tab-2',
+        value='tab-7',
         parent_className='custom-tabs',
         className='custom-tabs-container',
         children=[
@@ -53,6 +68,18 @@ app.layout = html.Div([
                 value='tab-5',
                 className='custom-tab',
                 selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Indicateur',
+                value='tab-6',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Tableau de bord',
+                value='tab-7',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
             )
         ]),
     html.Div(id='tabs-content-classes')
@@ -64,7 +91,7 @@ app.layout = html.Div([
 def render_content(tab):
     if tab == 'tab-1':
         return html.Div([
-        html.H2("Disparité des effectifs hommes-femmes", style={'text-align': 'center'}),
+        html.H2("Disparité des effectifs et des salaires femmes-hommes", style={'text-align': 'center'}),
         dcc.Dropdown(
             id='effectifs-dropdown',
             options=[{'label': csp, 'value': csp} for csp in colleges],
@@ -116,6 +143,25 @@ def render_content(tab):
         html.Div(id='graphs-container_5', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
     ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
 
+    elif tab == 'tab-6':
+        return html.Div([
+        html.H2("Indicateur", style={'text-align': 'center'}),
+        dcc.Dropdown(
+            id='indicateur-dropdown',
+            options=[{'label': indicateur, 'value': indicateur} for indicateur in indicateur_df6],
+            value=indicateur_df6[0],  # Valeur par défaut
+            placeholder="Sélectionnez un indicateur"
+        ),
+        html.Div(id='graphs-container_6', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
+    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
+
+    elif tab == 'tab-7':
+        return html.Div([
+        html.H2("Tableau de bord de l'évolution par genre chez EDF SA", style={'text-align': 'center'}),
+        html.Div(id='graphs-container_7', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
+    ], style={'padding': '20px'})
+
+
 @app.callback(
         Output('graphs-container_1', 'children'),
         Input('effectifs-dropdown', 'value')
@@ -126,13 +172,12 @@ def update_graphs(selected_csp):
 
     filtered_df1 = df1[df1["Collège"] == selected_csp]
 
-    #selected_csp = filtered_df1["Collège"].unique()
-
     fig_effectifs = px.bar(
         filtered_df1,
         x="Année",
         y="Nombre de salariés",
         color="Genre",
+        title=f"Évolution de la masse salariale - {selected_csp}",
         barmode="group",
         text_auto='.2s',
         labels={'Nombre de salariés':'Nombre d\'employés', 'Année':'Année'},
@@ -142,8 +187,24 @@ def update_graphs(selected_csp):
         }
     )
 
+    fig_salaires = px.line(
+        filtered_df1,
+        x='Année',
+        y="Salaire mensuel moyen (€, brut)",
+        color="Genre",
+        title=f"Évolution de la rémuneration moyenne - {selected_csp}",
+        markers=True,
+        color_discrete_map={
+            'Homme': '#1b909a',  # Bleu
+            'Femme': '#7900f1',  # Rose
+        }
+    )
+
+    fig_salaires.update_layout(yaxis_range=[0, 8000], hovermode = "x unified")
+
     return [
-        html.Div(dcc.Graph(figure=fig_effectifs), style={'width': '80%'})
+        html.Div(dcc.Graph(figure=fig_effectifs), style={'width': '60%'}),
+        html.Div(dcc.Graph(figure=fig_salaires), style={'width': '40%'})
     ]
 
 @app.callback(
@@ -156,7 +217,7 @@ def update_graphs(selected_evolution):
     filtered_df2 = df2[df2["Evolution"] == selected_evolution]
 
     # Extraire les collèges uniques pour le titre
-    selected_college = filtered_df2["Collège"].unique()
+    college_df2 = filtered_df2["Collège"].unique()
 
     # Créer les graphiques
     fig_population_formee = px.line(
@@ -164,7 +225,7 @@ def update_graphs(selected_evolution):
         x='Année',
         y="Proportion d'employés formés (%)",
         color='Genre',
-        title=f"Population formée - {selected_college}",
+        title=f"Population formée - {college_df2}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         markers=True,
         color_discrete_map={
@@ -186,6 +247,9 @@ def update_graphs(selected_evolution):
             'Femme': '#7900f1',  # Rose
         }
     )
+
+    fig_population_formee.update_layout(yaxis_range=[0, 40], hovermode = "x")
+    fig_nombre_evolutions.update_layout(yaxis_range=[0, 40], hovermode = "x")
 
     # Retourner les graphiques dans des divs côte à côte
     return [
@@ -228,6 +292,9 @@ def display_alternance_graphs(_):
         }
     )
 
+    fig_apprentissage.update_layout(yaxis_range=[0, 1500], hovermode = "x unified")
+    fig_professionnalisation.update_layout(yaxis_range=[0, 1500], hovermode = "x unified")
+
     return [
         html.Div(dcc.Graph(figure=fig_apprentissage), style={'width': '48%'}),
         html.Div(dcc.Graph(figure=fig_professionnalisation), style={'width': '48%'})
@@ -243,29 +310,28 @@ def update_conges_graphs(selected_csp):
 
     filtered_df4 = df4[df4["Collège"] == selected_csp]
 
-    #selected_csp = filtered_df1["Collège"].unique()
-
     fig_conges_femme = px.bar(
         filtered_df4,
         x="Année",
         y="Nombre d'heures moyen de congé maternité par salariée",
+        title=f"Prise de congés maternité - {selected_csp}",
         text_auto='.2s',
         labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'heures moyen de congé maternité', 'Année':'Année'},
-        color_discrete_map={
-            'Femme': '#7900f1', 
-        }
+        color_discrete_sequence=["#7900f1"]
     )
 
     fig_conges_homme = px.bar(
         filtered_df4,
         x="Année",
         y="Nombre d'heures moyen de congé paternité par salarié",
+        title=f"Prise de congés paternité - {selected_csp}",
         text_auto='.2s',
         labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'heures moyen de congé paternité', 'Année':'Année'},
-        color_discrete_map={
-            'Homme': '#1b909a', 
-        }
+        color_discrete_sequence=["#1b909a"]
     )
+
+    fig_conges_homme.update_layout(yaxis_range=[0, 60])
+    fig_conges_femme.update_layout(yaxis_range=[0, 60])
 
     return [
         html.Div(dcc.Graph(figure=fig_conges_femme), style={'width': '48%'}),
@@ -279,36 +345,33 @@ def update_conges_graphs(selected_csp):
 
 def update_temps_partiel_graphs(selected_csp):
 
-    filtered_df5 = df5[df5["Collège"] == selected_csp]
-
-    # Extraire les collèges uniques pour le titre
-    # selected_college = filtered_df5["Collège"].unique()
+    filtered_df5 = df5[df5["Collège"] == selected_csp].round(2)
 
     # Créer les graphiques
     mosaicplot_2017 = px.treemap(
         filtered_df5[filtered_df5["Année"] == 2017],
-        path=["Collège", "Genre"],
-        values="Proportion de salariés en temps partiel en décembre (%)",
+        path=["Genre", "Metrique"],
+        values="Valeur",
         color="Genre",
-        title=f"Taux de Temps Partiel par Genre et CSP en 2017",
+        title=f"Taux de temps partiel par genre en 2017 - {selected_csp}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         color_discrete_map={
-            'Homme': '#1b909a',  # Bleu
-            'Femme': '#7900f1',  # Rose
+            'Homme': '#1b909a',
+            'Femme': '#7900f1',
         }
     )
 
     mosaicplot_2023 = px.treemap(
         filtered_df5[filtered_df5["Année"] == 2023],
-        path=["Collège", "Genre"],
-        values="Proportion de salariés en temps partiel en décembre (%)",
+        path=["Genre", "Metrique"],
+        values="Valeur",
         color="Genre",
-        title=f"Taux de Temps Partiel par Genre et CSP en 2023",
+        title=f"Taux de temps partiel par genre en 2023 - {selected_csp}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         color_discrete_map={
-            'Homme': '#1b909a',  # Bleu
-            'Femme': '#7900f1',  # Rose
-        }
+            'Homme': '#1b909a',
+            'Femme': '#7900f1',
+        },
     )
 
     # Retourner les graphiques dans des divs côte à côte
@@ -316,6 +379,95 @@ def update_temps_partiel_graphs(selected_csp):
         html.Div(dcc.Graph(figure=mosaicplot_2017), style={'width': '48%'}),
         html.Div(dcc.Graph(figure=mosaicplot_2023), style={'width': '48%'})
     ]
+
+
+@app.callback(
+    Output('graphs-container_6', 'children'),
+    Input('indicateur-dropdown', 'value')
+)
+def update_output(selected_indicateur_df6):
+    return update_map(selected_indicateur_df6)
+
+def update_map(selected_indicateur_df6):
+    # Créer la carte centrée sur la France
+    m = folium.Map(location=[46.157880, 2.488444], zoom_start=5)
+    
+    # Créer la choroplèthe en utilisant votre GeoDataFrame (converti en GeoJSON)
+    folium.Choropleth(
+        geo_data=gdf1.to_json(),  # convertir en JSON
+        data=gdf1,
+        columns=["Région", selected_indicateur_df6],
+        key_on="feature.properties.Région",
+        fill_color="YlGn",
+        fill_opacity=0.7,
+        line_opacity=0.2,
+        legend_name=selected_indicateur_df6,
+    ).add_to(m)
+    
+    # Optionnel : ajouter les labels pour chaque région
+    style_function = lambda x: {
+        'fillColor': '#ffffff',
+        'color': '#000000',
+        'fillOpacity': 0.1,
+        'weight': 0.1
+    }
+    
+    highlight_function = lambda x: {'fillColor': '#000000', 'color': '#000000', 'fillOpacity': 0.50, 'weight': 0.1}
+    
+    folium.GeoJson(
+        gdf1.to_json(),
+        style_function=style_function,
+        highlight_function=highlight_function,
+        tooltip=folium.features.GeoJsonTooltip(
+            fields=["Région", selected_indicateur_df6],
+            aliases=["Région:", f"{selected_indicateur_df6}:"],
+            localize=True
+        )
+    ).add_to(m)
+    
+    # Récupérer le code HTML de la carte
+    map_html = m._repr_html_()
+    
+    # Afficher la carte dans un Iframe
+    return html.Iframe(srcDoc=map_html, width='60%', height='700', style={'border': '0'})
+
+@app.callback(
+    Output('graphs-container_7', 'children'),
+    Input('tabs-with-classes', 'value')
+)
+
+def tableau_de_bord(_):
+
+    # Créer la figure avec un grid de 6 lignes et 3 colonnes
+    fig = go.Figure()
+
+    fig.add_trace(go.Indicator(
+                value=200,  # Valeur différente par ligne
+                title = {'text': "Indicateur 1"},
+                delta={'reference': 160},
+                mode="number+delta",
+                domain={'row': 0, 'column': 0}))
+    fig.add_trace(go.Indicator(
+                value=200,  # Valeur différente par ligne
+                title = {'text': "Indicateur 1"},
+                delta={'reference': 160},
+                mode="number+delta",
+                domain={'row': 1, 'column': 0}))
+    fig.add_trace(go.Indicator(
+                value=200,  # Valeur différente par ligne
+                title = {'text': "Indicateur 1"},
+                delta={'reference': 160},
+                mode="number+delta",
+                domain={'row': 2, 'column': 0}))
+
+    # Mise en page du grid (6 lignes, 3 colonnes)
+    fig.update_layout(
+        grid={'rows': 6, 'columns': 3},
+        template="plotly_white"
+    )
+
+    return html.Div(dcc.Graph(figure=fig))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
