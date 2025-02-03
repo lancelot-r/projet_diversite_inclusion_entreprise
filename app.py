@@ -7,6 +7,7 @@ import folium
 from matplotlib import colormaps
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
+from folium.features import CustomIcon
 
 # Charger les données
 df1 = pd.read_csv("data/salaire_effectifs.csv")
@@ -25,14 +26,25 @@ colleges = df1["Collège"].unique()
 colleges_df4 = df4["Collège"].unique()
 colleges_df5 = df5["Collège"].unique()
 indicateur_df6 = ["Note Ecart rémunération", "Note Ecart taux de promotion", "Note Ecart taux d'augmentation (hors promotion)", 
-                      "Note Ecart taux d'augmentation", "Note Ecart taux de promotion", "Note Hautes rémunérations",
+                      "Note Ecart taux d'augmentation", "Note Hautes rémunérations",
                       "Note Retour congé maternité", "Note Index"]
 
 app = Dash(suppress_callback_exceptions=True)
 
 app.layout = html.Div([
-    html.H1("Diversité et inclusion en entreprise évolution du bilan social chez EDF", style={'text-align': 'center', 'margin-top': '20px'}),
 
+    html.H1("Diversité et inclusion en entreprise : analyse de l'évolution du bilan social d'EDF SA", style={'text-align': 'center', 'margin-top': '20px'}),
+    html.H1("sous l'angle des disparités de genre", style={'text-align': 'center'}),
+    html.Img(
+        src="https://upload.wikimedia.org/wikipedia/commons/1/12/%C3%89lectricit%C3%A9_de_France_logo.svg",
+        style={
+            "height": "100px",  # Ajuste la hauteur
+            "marginBottom": "50px",  # Espacement sous l'image
+            "display": "block",  # Pour rendre l'image en bloc
+            "margin": "auto"  # Centre l'image horizontalement
+        }
+    ),
+    html.Hr(style={"border": "1px solid #ccc", "margin": "20px 0"}),
     dcc.Tabs(
         id="tabs-with-classes",
         value='tab-7',
@@ -70,13 +82,13 @@ app.layout = html.Div([
                 selected_className='custom-tab--selected'
             ),
             dcc.Tab(
-                label='Indicateur',
+                label="Bilan d'EDF et moyennes régionales",
                 value='tab-6',
                 className='custom-tab',
                 selected_className='custom-tab--selected'
             ),
             dcc.Tab(
-                label='Tableau de bord',
+                label='Tableau de bord récapitulatif',
                 value='tab-7',
                 className='custom-tab',
                 selected_className='custom-tab--selected'
@@ -92,6 +104,7 @@ def render_content(tab):
     if tab == 'tab-1':
         return html.Div([
         html.H2("Disparité des effectifs et des salaires femmes-hommes", style={'text-align': 'center'}),
+        html.P("Sélectionnez une catégorie socio-professionnelle :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='effectifs-dropdown',
             options=[{'label': csp, 'value': csp} for csp in colleges],
@@ -104,6 +117,7 @@ def render_content(tab):
     elif tab == 'tab-2':
         return html.Div([
         html.H2("Évolution des formations", style={'text-align': 'center'}),
+        html.P("Sélectionnez une évolution :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='evolution-dropdown',
             options=[{'label': evolution, 'value': evolution} for evolution in evolutions],
@@ -122,6 +136,7 @@ def render_content(tab):
     elif tab == 'tab-4':
         return html.Div([
         html.H2("Evolution des prises de congés maternité / paternité", style={'text-align': 'center'}),
+        html.P("Sélectionnez une catégorie socio-professionnelle :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='conges-dropdown',
             options=[{'label': csp, 'value': csp} for csp in colleges_df4],
@@ -134,6 +149,7 @@ def render_content(tab):
     elif tab == 'tab-5':
         return html.Div([
         html.H2("Proportion en temps-partiel par genre", style={'text-align': 'center'}),
+        html.P("Sélectionnez une catégorie socio-professionnelle :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='temps_partiel-dropdown',
             options=[{'label': csp, 'value': csp} for csp in colleges_df5],
@@ -145,7 +161,8 @@ def render_content(tab):
 
     elif tab == 'tab-6':
         return html.Div([
-        html.H2("Indicateur", style={'text-align': 'center'}),
+        html.H2("Carte intéractive : moyenne des scores d'entreprises par région et comparaison avec EDF SA", style={'text-align': 'center'}),
+        html.P("Sélectionnez un indicateur :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='indicateur-dropdown',
             options=[{'label': indicateur, 'value': indicateur} for indicateur in indicateur_df6],
@@ -399,6 +416,15 @@ def update_temps_partiel_graphs(selected_csp):
         html.Div(dcc.Graph(figure=mosaicplot_2023), style={'width': '48%'})
     ]
 
+indicateur_links = {
+    "Note Ecart rémunération": "https://egapro.travail.gouv.fr/aide-index#indicateur-ecart-de-remuneration",
+    "Note Ecart taux de promotion": "https://egapro.travail.gouv.fr/aide-index#indicateur-cart-de-taux-de-promotion-plus-de-250-salaries",
+    "Note Ecart taux d'augmentation (hors promotion)": "https://egapro.travail.gouv.fr/aide-index#indicateur-cart-de-taux-d-augmentation-plus-de-250-salaries",
+    "Note Ecart taux d'augmentation": "https://egapro.travail.gouv.fr/aide-index#indicateur-ecart-de-taux-d-augmentation-50-250-salaries",
+    "Note Hautes rémunérations": "https://egapro.travail.gouv.fr/aide-index#indicateur-nombre-de-salaries-du-sexe-sous-represente-parmi-les-10-plus-hautes-remunerations",
+    "Note Retour congé maternité": "https://egapro.travail.gouv.fr/aide-index#indicateur-pourcentage-de-salariees-augment-es-dans-l-ann-e-suivant-leur-retour-de-cong-maternite",
+    "Note Index": "https://www.index-egapro.travail.gouv.fr/"
+}
 
 @app.callback(
     Output('graphs-container_6', 'children'),
@@ -409,7 +435,7 @@ def update_output(selected_indicateur_df6):
 
 def update_map(selected_indicateur_df6):
     # Créer la carte centrée sur la France
-    m = folium.Map(location=[46.157880, 2.488444], zoom_start=5)
+    m = folium.Map(location=[46.157880, 2.488444], zoom_start=6)
     
     # Créer la choroplèthe en utilisant votre GeoDataFrame (converti en GeoJSON)
     folium.Choropleth(
@@ -422,7 +448,32 @@ def update_map(selected_indicateur_df6):
         line_opacity=0.2,
         legend_name=selected_indicateur_df6,
     ).add_to(m)
-    
+
+        # Définition des coordonnées et valeur de l'indicateur pour une entreprise
+    entreprise_data = {
+        "nom": "EDF SA",
+        "latitude": 48.8566,  # Paris
+        "longitude": 2.3522,
+        "Note Ecart rémunération":40,
+        "Note Ecart taux de promotion":15,
+        "Note Ecart taux d'augmentation (hors promotion)":"Non communiqué", 
+        "Note Ecart taux d'augmentation":20,
+        "Note Hautes rémunérations":5,
+        "Note Retour congé maternité":15,
+        "Note Index": 75
+    }
+
+    logo_url = "https://upload.wikimedia.org/wikipedia/commons/1/12/%C3%89lectricit%C3%A9_de_France_logo.svg"
+    icon = CustomIcon(
+    logo_url,
+    icon_size=(40, 40)  # Ajuste la taille du logo
+)
+    folium.Marker(
+        location=[entreprise_data["latitude"], entreprise_data["longitude"]],
+        popup=f"<b>{entreprise_data['nom']}</b><br>{selected_indicateur_df6}: {entreprise_data[selected_indicateur_df6]}",
+        tooltip=f"{entreprise_data['nom']} - {selected_indicateur_df6}: {entreprise_data[selected_indicateur_df6]}",
+        icon=icon
+    ).add_to(m)
     # Optionnel : ajouter les labels pour chaque région
     style_function = lambda x: {
         'fillColor': '#ffffff',
@@ -446,9 +497,62 @@ def update_map(selected_indicateur_df6):
     
     # Récupérer le code HTML de la carte
     map_html = m._repr_html_()
-    
-    # Afficher la carte dans un Iframe
-    return html.Iframe(srcDoc=map_html, width='60%', height='700', style={'border': '0'})
+
+    # 📌 Sélecteur d'indicateur (Dropdown)
+    dropdown = dbc.Select(
+        id="select-indicateur",
+        options=[{"label": k, "value": k} for k in indicateur_links.keys()],
+        value=None,
+        placeholder="Définitions des indicateurs"
+    )
+
+    # 📌 Conteneur de la définition du lien
+    definition_link = html.Div(id="definition-link")
+
+    # 📌 Titre de la carte
+    header_section = dbc.Row(
+        dbc.Col(
+            html.H3(f"Carte intéractive : moyenne régionale de la {selected_indicateur_df6}", style={"textAlign": "center", "marginBottom": "20px"})
+        )
+    )
+
+    # 📌 Agencement avec sélection d'indicateur et lien au-dessus de la carte
+    layout = dbc.Container(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(dropdown, width=6),
+                    dbc.Col(definition_link, width=6)
+                ],
+                className="mb-3"
+            ),
+            header_section,
+            dbc.Row(
+                dbc.Col(html.Iframe(srcDoc=map_html, width='1200', height='700', style={'center': '0'}))
+            )
+        ],
+        fluid=True
+    )
+
+    return layout
+
+# 📌 Callback pour mettre à jour le lien de définition en fonction de l'indicateur sélectionné
+@app.callback(
+    Output("definition-link", "children"),
+    [Input("select-indicateur", "value")]
+)
+def update_link(selected_indicateur):
+    if selected_indicateur:
+        return dbc.Alert(
+            html.A(
+                f"Lien vers la définition - {selected_indicateur}",
+                href=indicateur_links[selected_indicateur],
+                target="_blank",
+                style={"text-decoration": "none", "color": "blue"}
+            ),
+            color="info"
+        )
+    return ""
 
 @app.callback(
     Output('graphs-container_7', 'children'),
