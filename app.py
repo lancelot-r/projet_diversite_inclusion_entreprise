@@ -440,29 +440,108 @@ def tableau_de_bord(_):
 
     # Créer la figure avec un grid de 6 lignes et 3 colonnes
     fig = go.Figure()
-
+    
+    # Colonne 1 : Effectifs
     fig.add_trace(go.Indicator(
-                value=200,  # Valeur différente par ligne
-                title = {'text': "Indicateur 1"},
-                delta={'reference': 160},
+                value=243003,
+                title = {'text': "Effectif"},
+                delta={'reference': 248953, 'relative': True},
                 mode="number+delta",
                 domain={'row': 0, 'column': 0}))
     fig.add_trace(go.Indicator(
-                value=200,  # Valeur différente par ligne
-                title = {'text': "Indicateur 1"},
-                delta={'reference': 160},
+                value=70653,
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                delta={'reference': 74691, 'relative': True},
                 mode="number+delta",
                 domain={'row': 2, 'column': 0}))
     fig.add_trace(go.Indicator(
-                value=200,  # Valeur différente par ligne
-                title = {'text': "Indicateur 1"},
-                delta={'reference': 160},
+                value=172350,
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                delta={'reference': 174262, 'relative': True},
                 mode="number+delta",
                 domain={'row': 4, 'column': 0}))
+    
+    # Colonne 2 : Salaires
+    fig.add_trace(go.Indicator(
+                value=5245,
+                number = {"suffix": "€"},
+                title = {'text': "Salaire"},
+                delta={'reference': 4318.33, 'relative': True},
+                mode="number+delta",
+                domain={'row': 0, 'column': 1}))
+    fig.add_trace(go.Indicator(
+                value=4914.67,
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                delta={'reference': 4009.33, 'relative': True},
+                mode="number+delta",
+                domain={'row': 2, 'column': 1}))
+    fig.add_trace(go.Indicator(
+                value=5575.33,
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                delta={'reference': 4627.33, 'relative': True},
+                mode="number+delta",
+                domain={'row': 4, 'column': 1}))
+    fig.add_trace(go.Indicator(
+                value=11.85,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.4em;color:gray'>Ecart</span>"},
+                delta={'reference': 13.36, "suffix": "%"},
+                mode="number+delta",
+                domain={'row': 6, 'column': 1}))
+    
+    # Colonne 3 : Formation
+    fig.add_trace(go.Indicator(
+                value=42.25,
+                number = {"suffix": "%"},
+                title = {'text': "Formation"},
+                delta={'reference': 47.39, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 0, 'column': 2}))
+    fig.add_trace(go.Indicator(
+                value = 38.34,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                delta={'reference': 47.86, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 2, 'column': 2}))
+    fig.add_trace(go.Indicator(
+                value=43.85,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                delta={'reference': 47.2, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 4, 'column': 2}))
+    
+    # Colonne 4 : Congés maaternité / paternité
+    fig.add_trace(go.Indicator(
+                value=42.25,
+                number = {"suffix": "%"},
+                title = {'text': "Formation"},
+                delta={'reference': 47.39, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 0, 'column': 2}))
+    fig.add_trace(go.Indicator(
+                value = 38.34,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                delta={'reference': 47.86, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 2, 'column': 2}))
+    fig.add_trace(go.Indicator(
+                value=43.85,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                delta={'reference': 47.2, "suffix":"%"},
+                mode="number+delta",
+                domain={'row': 4, 'column': 2}))
+    
 
+    
     # Mise en page du grid (6 lignes, 3 colonnes)
     fig.update_layout(
-        grid={'rows': 6, 'columns': 3},
+        grid={'rows': 7, 'columns': 3},
         template="plotly_white"
     )
 
