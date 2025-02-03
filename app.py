@@ -439,113 +439,158 @@ def update_map(selected_indicateur_df6):
 def tableau_de_bord(_):
 
     # Créer la figure avec un grid de 6 lignes et 3 colonnes
-    fig = go.Figure()
+    fig_effectif = go.Figure()
     
     # Colonne 1 : Effectifs
-    fig.add_trace(go.Indicator(
+    fig_effectif.add_trace(go.Indicator(
                 value=243003,
-                title = {'text': "Effectif"},
+                title = {'text': "Effectif<br><span style='font-size:0.6em;color:gray'>Total</span>"},
                 delta={'reference': 248953, 'relative': True},
                 mode="number+delta",
-                domain={'row': 0, 'column': 0}))
-    fig.add_trace(go.Indicator(
+                domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
+    
+    fig_effectif.add_trace(go.Indicator(
                 value=70653,
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Femmes</span>"},
                 delta={'reference': 74691, 'relative': True},
                 mode="number+delta",
-                domain={'row': 2, 'column': 0}))
-    fig.add_trace(go.Indicator(
+                domain={'x': [0.1, 0.3], 'y': [0.4, 0.6]}))
+    
+    fig_effectif.add_trace(go.Indicator(
                 value=172350,
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Hommes</span>"},
                 delta={'reference': 174262, 'relative': True},
                 mode="number+delta",
-                domain={'row': 4, 'column': 0}))
+                domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
     
-    # Colonne 2 : Salaires
-    fig.add_trace(go.Indicator(
-                value=5245,
-                number = {"suffix": "€"},
-                title = {'text': "Salaire"},
-                delta={'reference': 4318.33, 'relative': True},
-                mode="number+delta",
-                domain={'row': 0, 'column': 1}))
-    fig.add_trace(go.Indicator(
-                value=4914.67,
-                number = {"suffix": "€"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
-                delta={'reference': 4009.33, 'relative': True},
-                mode="number+delta",
-                domain={'row': 2, 'column': 1}))
-    fig.add_trace(go.Indicator(
-                value=5575.33,
-                number = {"suffix": "€"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
-                delta={'reference': 4627.33, 'relative': True},
-                mode="number+delta",
-                domain={'row': 4, 'column': 1}))
-    fig.add_trace(go.Indicator(
+    fig_effectif.add_trace(go.Indicator(
                 value=11.85,
                 number = {"suffix": "%"},
-                title= {'text': "<br><span style='font-size:0.4em;color:gray'>Ecart</span>"},
+                title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
                 delta={'reference': 13.36, "suffix": "%"},
                 mode="number+delta",
-                domain={'row': 6, 'column': 1}))
+                domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
+
+    
+    # Colonne 2 : Salaires
+    fig_salaire = go.Figure()
+
+    fig_salaire.add_trace(go.Indicator(
+                value=5245,
+                number = {"suffix": "€"},
+                title = {'text': "Salaire moyen<br><span style='font-size:0.6em;color:gray'>Total</span>"},
+                delta={'reference': 4318.33, 'relative': True},
+                mode="number+delta",
+                domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
+    
+    fig_salaire.add_trace(go.Indicator(
+                value=4914.67,
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Femmes</span>"},
+                delta={'reference': 4009.33, 'relative': True},
+                mode="number+delta",
+                domain={'x': [0.1, 0.3], 'y': [0.4, 0.6]}))
+
+    fig_salaire.add_trace(go.Indicator(
+                value=5575.33,
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Hommes</span>"},
+                delta={'reference': 4627.33, 'relative': True},
+                mode="number+delta",
+                domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
+
+    fig_salaire.add_trace(go.Indicator(
+                value=11.85,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
+                delta={'reference': 13.36, "suffix": "%"},
+                mode="number+delta",
+                domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
     
     # Colonne 3 : Formation
-    fig.add_trace(go.Indicator(
+    fig_formation = go.Figure()
+
+    fig_formation.add_trace(go.Indicator(
                 value=42.25,
                 number = {"suffix": "%"},
-                title = {'text': "Formation"},
+                title = {'text': "Salariés formés<br><span style='font-size:0.6em;color:gray'>Total</span>"},
                 delta={'reference': 47.39, "suffix":"%"},
                 mode="number+delta",
-                domain={'row': 0, 'column': 2}))
-    fig.add_trace(go.Indicator(
+                domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
+    
+    fig_formation.add_trace(go.Indicator(
                 value = 38.34,
-                number = {"suffix": "%"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Femmes</span>"},
                 delta={'reference': 47.86, "suffix":"%"},
                 mode="number+delta",
-                domain={'row': 2, 'column': 2}))
-    fig.add_trace(go.Indicator(
+                domain={'x': [0.1, 0.3], 'y': [0.4, 0.6]}))
+
+    fig_formation.add_trace(go.Indicator(
                 value=43.85,
-                number = {"suffix": "%"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
+                number = {"suffix": "€"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Hommes</span>"},
                 delta={'reference': 47.2, "suffix":"%"},
                 mode="number+delta",
-                domain={'row': 4, 'column': 2}))
-    
+                domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
+
+    fig_formation.add_trace(go.Indicator(
+                value=11.85,
+                number = {"suffix": "%"},
+                title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
+                delta={'reference': 13.36, "suffix": "%"},
+                mode="number+delta",
+                domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
+       
     # Colonne 4 : Congés maaternité / paternité
-    fig.add_trace(go.Indicator(
-                value=42.25,
-                number = {"suffix": "%"},
-                title = {'text': "Formation"},
-                delta={'reference': 47.39, "suffix":"%"},
-                mode="number+delta",
-                domain={'row': 0, 'column': 2}))
-    fig.add_trace(go.Indicator(
-                value = 38.34,
-                number = {"suffix": "%"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Femmes</span>"},
-                delta={'reference': 47.86, "suffix":"%"},
-                mode="number+delta",
-                domain={'row': 2, 'column': 2}))
-    fig.add_trace(go.Indicator(
-                value=43.85,
-                number = {"suffix": "%"},
-                title= {'text': "<br><span style='font-size:0.8em;color:gray'>Hommes</span>"},
-                delta={'reference': 47.2, "suffix":"%"},
-                mode="number+delta",
-                domain={'row': 4, 'column': 2}))
+    fig_conges = go.Figure()
     
-
+    fig_conges.add_trace(go.Indicator(
+                value=32,
+                number = {"suffix": "h"},
+                title = {'text': "Congés paternité<br><span style='font-size:0.6em;color:gray'>Total</span>"},
+                delta={'reference': 45, "relative":True},
+                mode="number+delta",
+                domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
     
-    # Mise en page du grid (6 lignes, 3 colonnes)
-    fig.update_layout(
-        grid={'rows': 7, 'columns': 3},
-        template="plotly_white"
-    )
+    fig_conges.add_trace(go.Indicator(
+                value = 26,
+                number = {"suffix": " h"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Congés maternité</span>"},
+                delta={'reference': 42, "relative":True},
+                mode="number+delta",
+                domain={'x': [0.1, 0.3], 'y': [0.4, 0.6]}))
 
-    return html.Div(dcc.Graph(figure=fig))
+    fig_conges.add_trace(go.Indicator(
+                value=6,
+                number = {"suffix": " h"},
+                title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Congés paternité</span>"},
+                delta={'reference': 3, "relative":True},
+                mode="number+delta",
+                domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
+
+    fig_conges.add_trace(go.Indicator(
+                value=20,
+                number = {"suffix": "h"},
+                title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
+                delta={'reference': 39, "relative": True},
+                mode="number+delta",
+                domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
+
+    return html.Div([
+        dcc.Graph(figure=fig_effectif),
+        dcc.Graph(figure=fig_salaire),
+        dcc.Graph(figure=fig_formation),
+        dcc.Graph(figure=fig_conges)
+    ], style={
+        'display': 'grid',
+        'gridTemplateColumns': '1fr 1fr',  # Deux colonnes de largeur égale
+        'gridAutoRows': '300px',          # Définit la hauteur des lignes
+        'justifyItems': 'center',         # Centrer les graphiques horizontalement
+        'alignItems': 'center',           # Centrer les graphiques verticalement
+        'padding': '0',                   # Supprimer tout padding global
+        'margin': '0'                     # Supprimer tout margin global
+    })
 
 
 if __name__ == '__main__':
