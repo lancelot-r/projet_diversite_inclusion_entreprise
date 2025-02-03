@@ -186,7 +186,9 @@ def update_graphs(selected_csp):
             'Femme': '#7900f1',  # Rose
         }
     )
-
+    fig_effectifs.update_traces(
+        hovertemplate="<b>Année :</b> %{x}<br><b>Nombre de salariés :</b> %{y:.0f}")
+    
     fig_salaires = px.line(
         filtered_df1,
         x='Année',
@@ -199,7 +201,9 @@ def update_graphs(selected_csp):
             'Femme': '#7900f1',  # Rose
         }
     )
-
+    fig_salaires.update_traces(
+        hovertemplate="<br><b>Année :</b> %{x}<br><b>Salaire mensuel moyen brut :</b> %{y:.2f}€")
+    
     fig_salaires.update_layout(yaxis_range=[0, 8000], hovermode = "x unified")
 
     return [
@@ -233,7 +237,9 @@ def update_graphs(selected_evolution):
             'Femme': '#7900f1',  # Rose
         }
     )
-
+    fig_population_formee.update_traces(
+        hovertemplate="<br><b>Année :</b> %{x}<br><b>Proportion d'employés formés :</b> %{y:.2f}%")
+    
     fig_nombre_evolutions = px.line(
         filtered_df2,
         x='Année',
@@ -247,9 +253,11 @@ def update_graphs(selected_evolution):
             'Femme': '#7900f1',  # Rose
         }
     )
-
-    fig_population_formee.update_layout(yaxis_range=[0, 40], hovermode = "x")
-    fig_nombre_evolutions.update_layout(yaxis_range=[0, 40], hovermode = "x")
+    fig_nombre_evolutions.update_traces(
+        hovertemplate="<br><b>Année :</b> %{x}<br><b>Proportion d'évolutions :</b> %{y:.2f}%")
+    
+    fig_population_formee.update_layout(yaxis_range=[0, 40], hovermode = "x unified")
+    fig_nombre_evolutions.update_layout(yaxis_range=[0, 40], hovermode = "x unified")
 
     # Retourner les graphiques dans des divs côte à côte
     return [
@@ -278,7 +286,9 @@ def display_alternance_graphs(_):
             'Femme': '#7900f1',  # Rose
         }
     )
-
+    fig_apprentissage.update_traces(
+        hovertemplate="<br><b>Année :</b> %{x}<br><b>Nombre de contrats :</b> %{y:.0f}")
+    
     fig_professionnalisation = px.line(
         df3_pro,
         x='Année',
@@ -291,7 +301,9 @@ def display_alternance_graphs(_):
             'Femme': '#7900f1',  # Rose
         }
     )
-
+    fig_professionnalisation.update_traces(
+        hovertemplate="<br><b>Année :</b> %{x}<br><b>Nombre de contrats :</b> %{y:.0f}")
+    
     fig_apprentissage.update_layout(yaxis_range=[0, 1500], hovermode = "x unified")
     fig_professionnalisation.update_layout(yaxis_range=[0, 1500], hovermode = "x unified")
 
@@ -316,20 +328,24 @@ def update_conges_graphs(selected_csp):
         y="Nombre d'heures moyen de congé maternité par salariée",
         title=f"Prise de congés maternité - {selected_csp}",
         text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé maternité par salariée":'Nombre d\'heures moyen de congé maternité', 'Année':'Année'},
+        labels={"Nombre d'heures moyen de congé maternité par salariée":'Durée moyenne de congé maternité (heures)', 'Année':'Année'},
         color_discrete_sequence=["#7900f1"]
     )
-
+    fig_conges_femme.update_traces(
+        hovertemplate="<b>Année :</b> %{x}<br><b>Durée moyenne de congé maternité :</b> %{y:.0f}h")
+    
     fig_conges_homme = px.bar(
         filtered_df4,
         x="Année",
         y="Nombre d'heures moyen de congé paternité par salarié",
         title=f"Prise de congés paternité - {selected_csp}",
         text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé paternité par salarié":'Nombre d\'heures moyen de congé paternité', 'Année':'Année'},
+        labels={"Nombre d'heures moyen de congé paternité par salarié":'Durée moyenne de congé paternité (heures)', 'Année':'Année'},
         color_discrete_sequence=["#1b909a"]
     )
-
+    fig_conges_homme.update_traces(
+        hovertemplate="<b>Année :</b> %{x}<br><b>Durée moyenne de congé paternité :</b> %{y:.0f}h")
+    
     fig_conges_homme.update_layout(yaxis_range=[0, 60])
     fig_conges_femme.update_layout(yaxis_range=[0, 60])
 
@@ -353,27 +369,30 @@ def update_temps_partiel_graphs(selected_csp):
         path=["Genre", "Metrique"],
         values="Valeur",
         color="Genre",
-        title=f"Taux de temps partiel par genre en 2017 - {selected_csp}",
+        title=f"Proportion d'employés en temps partiel par genre en 2017 - {selected_csp}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         color_discrete_map={
             'Homme': '#1b909a',
             'Femme': '#7900f1',
         }
     )
-
+    mosaicplot_2017.update_traces(
+        hovertemplate="%{label} : %{value:.0f} %")
+    
     mosaicplot_2023 = px.treemap(
         filtered_df5[filtered_df5["Année"] == 2023],
         path=["Genre", "Metrique"],
         values="Valeur",
         color="Genre",
-        title=f"Taux de temps partiel par genre en 2023 - {selected_csp}",
+        title=f"Proportion d'employés en temps partiel par genre en 2023 - {selected_csp}",
         labels={'Valeur': 'Valeur', 'Année': 'Année'},
         color_discrete_map={
             'Homme': '#1b909a',
             'Femme': '#7900f1',
         },
     )
-
+    mosaicplot_2023.update_traces(
+        hovertemplate="%{label} : %{value:.0f} %")
     # Retourner les graphiques dans des divs côte à côte
     return [
         html.Div(dcc.Graph(figure=mosaicplot_2017), style={'width': '48%'}),
@@ -548,7 +567,7 @@ def tableau_de_bord(_):
     fig_conges.add_trace(go.Indicator(
                 value=32,
                 number = {"suffix": "h"},
-                title = {'text': "Congés paternité<br><span style='font-size:0.6em;color:gray'>Total</span>"},
+                title = {'text': "Congés parental<br><span style='font-size:0.6em;color:gray'>Total</span>"},
                 delta={'reference': 45, "relative":True},
                 mode="number+delta",
                 domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
