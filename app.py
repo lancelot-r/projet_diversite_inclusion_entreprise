@@ -9,12 +9,12 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 # Charger les données
-df1 = pd.read_csv("salaire_effectifs.csv")
-df2 = pd.read_csv("formation_evo.csv")
-df3 = pd.read_csv("alternance.csv")
-df4 = pd.read_csv("absence_conge_matpat.csv")
-df5 = pd.read_csv("temps_partiel_final.csv")
-df6 = pd.read_csv("maps.csv")
+df1 = pd.read_csv("data/salaire_effectifs.csv")
+df2 = pd.read_csv("data/formation_evo.csv")
+df3 = pd.read_csv("data/alternance.csv")
+df4 = pd.read_csv("data/absence_conge_matpat.csv")
+df5 = pd.read_csv("data/temps_partiel_final.csv")
+df6 = pd.read_csv("data/maps.csv")
 gdf1 = gpd.read_file("data/region.geojson")
 gdf1.rename(columns={'nom': 'Région'}, inplace=True)
 gdf1 = gdf1.merge(df6, on='Région', how='left')
@@ -452,13 +452,13 @@ def tableau_de_bord(_):
                 title = {'text': "Indicateur 1"},
                 delta={'reference': 160},
                 mode="number+delta",
-                domain={'row': 1, 'column': 0}))
+                domain={'row': 2, 'column': 0}))
     fig.add_trace(go.Indicator(
                 value=200,  # Valeur différente par ligne
                 title = {'text': "Indicateur 1"},
                 delta={'reference': 160},
                 mode="number+delta",
-                domain={'row': 2, 'column': 0}))
+                domain={'row': 4, 'column': 0}))
 
     # Mise en page du grid (6 lignes, 3 colonnes)
     fig.update_layout(
