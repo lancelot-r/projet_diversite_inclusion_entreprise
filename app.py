@@ -47,12 +47,18 @@ app.layout = html.Div([
     html.Hr(style={"border": "1px solid #ccc", "margin": "20px 0"}),
     dcc.Tabs(
         id="tabs-with-classes",
-        value='tab-7',
+        value='',
         parent_className='custom-tabs',
         className='custom-tabs-container',
         children=[
             dcc.Tab(
-                label='Disparité des effectifs femmes-hommes',
+                label="Métriques d'évolution 2017 - 2024",
+                value='tab-0',
+                className='custom-tab',
+                selected_className='custom-tab--selected'
+            ),
+            dcc.Tab(
+                label='Disparité des effectifs et rémunerations femmes-hommes',
                 value='tab-1',
                 className='custom-tab',
                 selected_className='custom-tab--selected'
@@ -70,12 +76,6 @@ app.layout = html.Div([
                 selected_className='custom-tab--selected'
             ),
             dcc.Tab(
-                label='Evolution des prises de congés maternité / paternité',
-                value='tab-4',
-                className='custom-tab',
-                selected_className='custom-tab--selected'
-            ),
-            dcc.Tab(
                 label='Proportion en temps partiel par genre',
                 value='tab-5',
                 className='custom-tab',
@@ -87,12 +87,6 @@ app.layout = html.Div([
                 className='custom-tab',
                 selected_className='custom-tab--selected'
             ),
-            dcc.Tab(
-                label='Tableau de bord récapitulatif',
-                value='tab-7',
-                className='custom-tab',
-                selected_className='custom-tab--selected'
-            )
         ]),
     html.Div(id='tabs-content-classes')
 ])
@@ -133,19 +127,6 @@ def render_content(tab):
         html.Div(id='graphs-container_3', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
     ], style={'padding': '20px'})
 
-    elif tab == 'tab-4':
-        return html.Div([
-        html.H2("Evolution des prises de congés maternité / paternité", style={'text-align': 'center'}),
-        html.P("Sélectionnez une catégorie socio-professionnelle :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
-        dcc.Dropdown(
-            id='conges-dropdown',
-            options=[{'label': csp, 'value': csp} for csp in colleges_df4],
-            value=colleges_df4[0],  # Valeur par défaut
-            placeholder="Sélectionnez une catégorie socio-professionnelle"
-        ),
-        html.Div(id='graphs-container_4', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
-    ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
-    
     elif tab == 'tab-5':
         return html.Div([
         html.H2("Proportion en temps-partiel par genre", style={'text-align': 'center'}),
@@ -172,7 +153,7 @@ def render_content(tab):
         html.Div(id='graphs-container_6', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
     ], style={'padding': '20px', 'border-bottom': '2px solid #ccc'})
 
-    elif tab == 'tab-7':
+    elif tab == 'tab-0':
         return html.Div([
         html.H2("Tableau de bord de l'évolution par genre chez EDF SA", style={'text-align': 'center'}),
         html.Div(id='graphs-container_7', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
@@ -329,47 +310,6 @@ def display_alternance_graphs(_):
         html.Div(dcc.Graph(figure=fig_professionnalisation), style={'width': '48%'})
     ]
 
-@app.callback(
-        Output('graphs-container_4', 'children'),
-        Input('conges-dropdown', 'value')
-)
-
-# Graphique Tab 1 : Disparité des effectifs femmes-hommes
-def update_conges_graphs(selected_csp):
-
-    filtered_df4 = df4[df4["Collège"] == selected_csp]
-
-    fig_conges_femme = px.bar(
-        filtered_df4,
-        x="Année",
-        y="Nombre d'heures moyen de congé maternité par salariée",
-        title=f"Prise de congés maternité - {selected_csp}",
-        text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé maternité par salariée":'Durée moyenne de congé maternité (heures)', 'Année':'Année'},
-        color_discrete_sequence=["#7900f1"]
-    )
-    fig_conges_femme.update_traces(
-        hovertemplate="<b>Année :</b> %{x}<br><b>Durée moyenne de congé maternité :</b> %{y:.0f}h")
-    
-    fig_conges_homme = px.bar(
-        filtered_df4,
-        x="Année",
-        y="Nombre d'heures moyen de congé paternité par salarié",
-        title=f"Prise de congés paternité - {selected_csp}",
-        text_auto='.2s',
-        labels={"Nombre d'heures moyen de congé paternité par salarié":'Durée moyenne de congé paternité (heures)', 'Année':'Année'},
-        color_discrete_sequence=["#1b909a"]
-    )
-    fig_conges_homme.update_traces(
-        hovertemplate="<b>Année :</b> %{x}<br><b>Durée moyenne de congé paternité :</b> %{y:.0f}h")
-    
-    fig_conges_homme.update_layout(yaxis_range=[0, 60])
-    fig_conges_femme.update_layout(yaxis_range=[0, 60])
-
-    return [
-        html.Div(dcc.Graph(figure=fig_conges_femme), style={'width': '48%'}),
-        html.Div(dcc.Graph(figure=fig_conges_homme), style={'width': '48%'})
-    ]
 
 @app.callback(
     Output('graphs-container_5', 'children'),
@@ -512,7 +452,7 @@ def update_map(selected_indicateur_df6):
     # 📌 Titre de la carte
     header_section = dbc.Row(
         dbc.Col(
-            html.H3(f"Carte intéractive : moyenne régionale de la {selected_indicateur_df6}", style={"textAlign": "center", "marginBottom": "20px"})
+            html.H3(f"Indicateur selectionné : {selected_indicateur_df6} (Les scores régionaux correspondent aux moyennes des scores des entreprises dont le siège social se situe dans la région)", style={"textAlign": "center", "fontSize": "16px", "fontWeight": "lighter", "marginBottom": "20px"})
         )
     )
 
@@ -587,10 +527,10 @@ def tableau_de_bord(_):
                 domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
     
     fig_effectif.add_trace(go.Indicator(
-                value=11.85,
+                value=-59,
                 number = {"suffix": "%"},
                 title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
-                delta={'reference': 13.36, "suffix": "%"},
+                delta={'reference': -57.13, "suffix": "%"},
                 mode="number+delta",
                 domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
 
@@ -623,12 +563,13 @@ def tableau_de_bord(_):
                 domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
 
     fig_salaire.add_trace(go.Indicator(
-                value=11.85,
+                value=-11.84,
                 number = {"suffix": "%"},
                 title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
-                delta={'reference': 13.36, "suffix": "%"},
+                delta={'reference': -13.35, "suffix": "%"},
                 mode="number+delta",
                 domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
+    
     
     # Colonne 3 : Formation
     fig_formation = go.Figure()
@@ -643,7 +584,7 @@ def tableau_de_bord(_):
     
     fig_formation.add_trace(go.Indicator(
                 value = 38.34,
-                number = {"suffix": "€"},
+                number = {"suffix": "%"},
                 title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Femmes</span>"},
                 delta={'reference': 47.86, "suffix":"%"},
                 mode="number+delta",
@@ -651,69 +592,68 @@ def tableau_de_bord(_):
 
     fig_formation.add_trace(go.Indicator(
                 value=43.85,
-                number = {"suffix": "€"},
+                number = {"suffix": "%"},
                 title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Hommes</span>"},
                 delta={'reference': 47.2, "suffix":"%"},
                 mode="number+delta",
                 domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
 
     fig_formation.add_trace(go.Indicator(
-                value=11.85,
+                value=-12.56,
                 number = {"suffix": "%"},
                 title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
-                delta={'reference': 13.36, "suffix": "%"},
+                delta={'reference': 1.39, "suffix": "%"},
                 mode="number+delta",
                 domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
-       
-    # Colonne 4 : Congés maaternité / paternité
-    fig_conges = go.Figure()
     
-    fig_conges.add_trace(go.Indicator(
-                value=32,
-                number = {"suffix": "h"},
-                title = {'text': "Congés parental<br><span style='font-size:0.6em;color:gray'>Total</span>"},
-                delta={'reference': 45, "relative":True},
-                mode="number+delta",
-                domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
-    
-    fig_conges.add_trace(go.Indicator(
-                value = 26,
-                number = {"suffix": " h"},
-                title= {'text': "<br><span style='font-size:0.8em;color:#7900f1'>Congés maternité</span>"},
-                delta={'reference': 42, "relative":True},
-                mode="number+delta",
-                domain={'x': [0.1, 0.3], 'y': [0.4, 0.6]}))
-
-    fig_conges.add_trace(go.Indicator(
-                value=6,
-                number = {"suffix": " h"},
-                title= {'text': "<br><span style='font-size:0.8em;color:#1b909a'>Congés paternité</span>"},
-                delta={'reference': 3, "relative":True},
-                mode="number+delta",
-                domain={'x': [0.7, 0.9], 'y': [0.4, 0.6]}))
-
-    fig_conges.add_trace(go.Indicator(
-                value=20,
-                number = {"suffix": "h"},
-                title= {'text': "<br><span style='font-size:0.6em;color:gray'>Ecart</span>"},
-                delta={'reference': 39, "relative": True},
-                mode="number+delta",
-                domain={'x': [0.4, 0.6], 'y': [0.4, 0.6]}))
+    fig_effectif.update_layout(margin=dict(l=0, r=0, t=100, b=0))
+    fig_salaire.update_layout(margin=dict(l=0, r=0, t=100, b=0))
+    fig_formation.update_layout(margin=dict(l=0, r=0, t=100, b=0))
 
     return html.Div([
-        dcc.Graph(figure=fig_effectif),
-        dcc.Graph(figure=fig_salaire),
-        dcc.Graph(figure=fig_formation),
-        dcc.Graph(figure=fig_conges)
+    # Conteneur pour l'effectif
+        html.Div([
+            dcc.Graph(id='fig-effectif', figure=fig_effectif, style={'height': '350px', 'width': '400px'})
+        ], style={
+            'backgroundColor': '#f9f9f9',
+            'borderRadius': '15px',
+            'padding': '20px',
+            'boxShadow': '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            'margin': '10px auto',
+            'textAlign': 'center'
+        }),
+
+        # Conteneur pour le salaire
+        html.Div([
+            dcc.Graph(id='fig-salaire', figure=fig_salaire, style={'height': '350px', 'width': '400px'})
+        ], style={
+            'backgroundColor': '#f9f9f9',
+            'borderRadius': '15px',
+            'padding': '20px',
+            'boxShadow': '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            'margin': '10px auto',
+            'textAlign': 'center'
+        }),
+
+        # Conteneur pour la formation
+        html.Div([
+            dcc.Graph(id='fig-formation', figure=fig_formation, style={'height': '350px', 'width': '400px'})
+        ], style={
+            'backgroundColor': '#f9f9f9',
+            'borderRadius': '15px',
+            'padding': '20px',
+            'boxShadow': '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            'margin': '10px auto',
+            'textAlign': 'center'
+        }),
     ], style={
-        'display': 'grid',
-        'gridTemplateColumns': '1fr 1fr',  # Deux colonnes de largeur égale
-        'gridAutoRows': '300px',          # Définit la hauteur des lignes
-        'justifyItems': 'center',         # Centrer les graphiques horizontalement
-        'alignItems': 'center',           # Centrer les graphiques verticalement
-        'padding': '0',                   # Supprimer tout padding global
-        'margin': '0'                     # Supprimer tout margin global
+        'display': 'flex',
+        'flexDirection': 'row',
+        'alignItems': 'center',
+        'justifyContent': 'center',
+        'gap': '20px'
     })
+
 
 
 if __name__ == '__main__':
