@@ -47,7 +47,7 @@ app.layout = html.Div([
     html.Hr(style={"border": "1px solid #ccc", "margin": "20px 0"}),
     dcc.Tabs(
         id="tabs-with-classes",
-        value='',
+        value='tab-0',
         parent_className='custom-tabs',
         className='custom-tabs-container',
         children=[
@@ -142,7 +142,7 @@ def render_content(tab):
 
     elif tab == 'tab-6':
         return html.Div([
-        html.H2("Carte intéractive : moyenne des scores d'entreprises par région et comparaison avec EDF SA", style={'text-align': 'center'}),
+        html.H2("Carte intéractive : moyenne des scores d'entreprises (1000+ salariés) par région et comparaison avec EDF SA", style={'text-align': 'center'}),
         html.P("Sélectionnez un indicateur :", style={"fontSize": "16px", "fontWeight": "lighter", "marginBottom": "5px"}),
         dcc.Dropdown(
             id='indicateur-dropdown',
@@ -156,6 +156,7 @@ def render_content(tab):
     elif tab == 'tab-0':
         return html.Div([
         html.H2("Tableau de bord de l'évolution par genre chez EDF SA", style={'text-align': 'center'}),
+        html.P("(Les écarts en rouges montrent une augmentation des disparités entre femmes et hommes)", style={"fontSize": "14px", "fontWeight": "lighter", "marginBottom": "5px", "textAlign": "center"}),        
         html.Div(id='graphs-container_7', style={'display': 'flex', 'justify-content': 'space-around', 'margin-top': '20px'})
     ], style={'padding': '20px'})
 
@@ -508,8 +509,9 @@ def tableau_de_bord(_):
     fig_effectif.add_trace(go.Indicator(
                 value=243003,
                 title = {'text': "Effectif<br><span style='font-size:0.6em;color:gray'>Total</span>"},
-                delta={'reference': 248953, 'relative': True},
+                delta={'reference': 248953, 'relative': True}, #'valueformat': '.2f'}, NE MARCHE PAS POUR ARRONDIR LE DELTA
                 mode="number+delta",
+                #value={'valueformat': '.2f'}, NE MARCHE PAS POUR ARRONDIR LE DELTA
                 domain={'x': [0.4, 0.6], 'y': [0.8, 1.0]}))
     
     fig_effectif.add_trace(go.Indicator(
